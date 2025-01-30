@@ -27,3 +27,29 @@ $ go mod download
 ```
 $ air --build.cmd "go build -o ./bin/api ./cmd/api" --build.bin "./bin/api"
 ```
+
+## Creating and running migrations
+
+Go to "gobid/internal/store/pgstore/migrations"
+
+Then, inside the folder, create a new migration using the following tern command:
+```
+$ tern create <migration_name>
+```
+
+Next you can add the SQL queries in the newly created file.
+
+Finally, you can go back to the project root folder and run the migrations:
+```
+$ go run ./cmd/terndotenv/
+```
+
+## Generating queries with sqlc
+
+To generate queries using sqlc, follow these steps:
+1. Navigate to the "gobid/internal/store/pgstore" directory.
+2. Add your SQL query in a `.sql` file within this directory.
+3. Run the following command to generate the Go code:
+```
+$ sqlc generate -f ./internal/store/pgstore/sqlc.yaml
+```

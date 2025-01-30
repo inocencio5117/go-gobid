@@ -6,12 +6,16 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/inocencio5117/go-gobid/internal/store/pgstore"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var ErrDuplicatedEmailOrUsername = errors.New("username or email alredy exists")
+var (
+	ErrDuplicatedEmailOrUsername = errors.New("username or email alredy exists")
+	ErrInvalidCredentials        = errors.New("invalid credentials")
+)
 
 type UserService struct {
 	pool    *pgxpool.Pool
@@ -52,4 +56,28 @@ func (us *UserService) CreateUser(ctx context.Context, userName, email, password
 	}
 
 	return id, nil
+}
+
+func (us *UserService) AuthenticateUser(ctx context.Context, email, password string) (uuid.UUID, error) {
+	user, err := us.queries.GetUserByEmail(ctx, email)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return uuid.UUID{}, ErrInvalidCredentials
+		}
+
+		return uuid.UUID{}, err
+	}
+
+	err = bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(password))
+
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return uuid.UUID{}, ErrInvalidCredentials
+		}
+
+		return uuid.UUID{}, err
+	}
+
+	return user.ID, nil
 }
