@@ -53,3 +53,8 @@ To generate queries using sqlc, follow these steps:
 ```
 $ sqlc generate -f ./internal/store/pgstore/sqlc.yaml
 ```
+
+## Setting CSRF Toker
+1. Set up the environment variable "GOBID_CSRF_KEY" with a 32 bits key
+2. Get the token in /csrftoken
+3. When using routes protected by CSRF authentication use the header "X-CSRF-Token"
